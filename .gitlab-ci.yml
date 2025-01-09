@@ -23,13 +23,13 @@ install_dependencies:
 test:
   stage: test
   script:
-    # Ustawienie SQLite na czas testów w pliku settings.py
-    - sed -i 's|\'ENGINE\':\'django.db.backends.postgresql\'|\'ENGINE\': \'django.db.backends.sqlite3\'|g' scrum-board-visi/settings.py
-    # Uruchomienie migracji i testów
-    - python manage.py makemigrations
-    - python manage.py migrate
-    - python manage.py test
-
+    - |
+      # Ustawienie SQLite na czas testów w pliku settings.py
+      sed -i 's|\'ENGINE\':\'django.db.backends.postgresql\'|\'ENGINE\': \'django.db.backends.sqlite3\'|g' scrum-board-visi/settings.py
+      # Uruchomienie migracji i testów
+      python manage.py makemigrations
+      python manage.py migrate
+      python manage.py test
   artifacts:
     paths:
       - test-reports/
