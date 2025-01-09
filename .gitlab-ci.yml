@@ -1,3 +1,9 @@
+# Wspólne kroki przed każdym zadaniem
+before_script:
+  - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash curl
+  - curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose  # Ustawienie praw do uruchamiania
+
 stages:
   - build
   - test
@@ -10,7 +16,6 @@ build_backend:
   services:
     - docker:dind  # Aby umożliwić Docker-in-Docker
   script:
-    - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash
     - docker-compose -f ../backend/docker-compose.yml build web  # Budowanie backendu
 
 # Etap budowania frontendu
@@ -18,9 +23,7 @@ build_frontend:
   stage: build
   image: node:16-alpine  # Obraz Alpine dla frontendu
   script:
-    - npm install  # Instalacja zależności dla frontendu
     - docker-compose -f ../frontend/docker-compose.yml build frontend  # Budowanie frontendu
-
 
 # Etap testowania backendu
 test_backend:
@@ -29,18 +32,14 @@ test_backend:
   services:
     - docker:dind  # Docker-in-Docker do uruchamiania kontenerów
   script:
-    - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash
     - docker-compose -f ../backend/docker-compose.yml run web python manage.py test  # Uruchomienie testów
-
 
 # Etap testowania frontendu
 test_frontend:
   stage: test
   image: node:16-alpine  # Obraz Alpine dla frontendu
   script:
-    - npm install  # Instalacja zależności dla frontendu
     - docker-compose -f ../frontend/docker-compose.yml run frontend npm run test  # Uruchomienie testów frontendu
-
 
 # Etap deploymentu
 deploy:
