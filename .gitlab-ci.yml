@@ -17,12 +17,9 @@ test:
   stage: test
   script:
     - echo "Running tests"
-    - find . -name "test_*.py"  # Sprawdzi, czy pliki testowe są obecne
-    - python scrum-board-visi/manage.py test  # Uruchomienie testów
+    - python scrum-board-visi/manage.py test
 
 deploy:
   stage: deploy
   script:
     - echo "Deploying to production..."
-  only:
-    - master
