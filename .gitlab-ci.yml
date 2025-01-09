@@ -21,14 +21,14 @@ build:
   stage: build
   script:
     - echo "Building Docker images"
-    - docker-compose -f scrum-board-visi/docker-compose.yml build  # Budowanie backendu i frontendu z pliku docker-compose.yml
+    - docker-compose -f scrum-board-visi/Docker-compose.yml build  # Budowanie backendu i frontendu z pliku docker-compose.yml
 
 # Etap test - Uruchomienie testów
 test:
   stage: test
   script:
     - echo "Running tests"
-    - docker-compose -f scrum-board-visi/docker-compose.yml run web python manage.py test  # Uruchomienie testów w kontenerze web (backend)
+    - docker-compose -f scrum-board-visi/Docker-compose.yml run web python manage.py test  # Uruchomienie testów w kontenerze web (backend)
 
 # Etap deploy - Wdrażanie na środowisko produkcyjne
 deploy:
