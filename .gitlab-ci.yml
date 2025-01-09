@@ -24,14 +24,11 @@ before_script:
 test:
   stage: test
   script:
-    - |
-      # Ustawienie SQLite na czas testów w pliku settings.py
-      sed -i 's|\'ENGINE\':\'django.db.backends.postgresql\'|\'ENGINE\': \'django.db.backends.sqlite3\'|g' scrum-board-visi/settings.py
-      # Uruchomienie migracji
-      python scrum-board-visi/manage.py makemigrations
-      python scrum-board-visi/manage.py migrate
-      # Uruchomienie testów
-      python scrum-board-visi/manage.py test
+    # Uruchomienie migracji
+    - python scrum-board-visi/manage.py makemigrations
+    - python scrum-board-visi/manage.py migrate
+    # Uruchomienie testów
+    - python scrum-board-visi/manage.py test
   artifacts:
     paths:
       - test-reports/
