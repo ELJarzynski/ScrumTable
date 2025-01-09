@@ -1,0 +1,39 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build_backend:
+  stage: build
+  script:
+    - docker-compose build web
+  only:
+    - main
+
+build_frontend:
+  stage: build
+  script:
+    - docker-compose build frontend
+  only:
+    - main
+
+test_backend:
+  stage: test
+  script:
+    - docker-compose run web python manage.py test
+  only:
+    - main
+
+test_frontend:
+  stage: test
+  script:
+    - docker-compose run frontend npm run test
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deployment steps here"
+  only:
+    - main
