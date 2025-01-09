@@ -28,7 +28,7 @@ test:
   stage: test
   script:
     - echo "Running tests"
-    - docker-compose -f docker-compose.yml run web python manage.py test  # Uruchomienie testów w kontenerze web (backend)
+    - docker-compose -f scrum-board-visi/docker-compose.yml run web python manage.py test  # Uruchomienie testów w kontenerze web (backend)
 
 # Etap deploy - Wdrażanie na środowisko produkcyjne
 deploy:
