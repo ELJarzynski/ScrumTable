@@ -35,6 +35,6 @@ deploy:
   stage: deploy
   script:
     - echo "Deploying to production..."
-    # Możesz dodać tu kod wdrożeniowy, np. deployment na serwer produkcyjny
-  only:
-    - master
+    - cd scrum-board-visi  # Zmiana katalogu na scrum-board-visi
+    - docker-compose -f Docker-compose.yml up -d  # Uruchomienie kontenerów w trybie detached
+    - echo "Deployment successful!"  # Potwierdzenie zakończenia wdrożenia
