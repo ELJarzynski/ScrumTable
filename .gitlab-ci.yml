@@ -12,8 +12,6 @@ build_backend:
   script:
     - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash
     - docker-compose -f ../backend/docker-compose.yml build web  # Budowanie backendu
-  only:
-    - main
 
 # Etap budowania frontendu
 build_frontend:
@@ -22,8 +20,7 @@ build_frontend:
   script:
     - npm install  # Instalacja zależności dla frontendu
     - docker-compose -f ../frontend/docker-compose.yml build frontend  # Budowanie frontendu
-  only:
-    - main
+
 
 # Etap testowania backendu
 test_backend:
@@ -34,8 +31,7 @@ test_backend:
   script:
     - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash
     - docker-compose -f ../backend/docker-compose.yml run web python manage.py test  # Uruchomienie testów
-  only:
-    - main
+
 
 # Etap testowania frontendu
 test_frontend:
@@ -44,8 +40,7 @@ test_frontend:
   script:
     - npm install  # Instalacja zależności dla frontendu
     - docker-compose -f ../frontend/docker-compose.yml run frontend npm run test  # Uruchomienie testów frontendu
-  only:
-    - main
+
 
 # Etap deploymentu
 deploy:
