@@ -7,8 +7,6 @@ from .serializer import BoardSerializer, BoardUserSerializer
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from user.models import User
 
-# Create your views here.
-
 
 class CreateBoardView(generics.CreateAPIView):
     # Create Board
