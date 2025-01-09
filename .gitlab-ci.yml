@@ -10,15 +10,13 @@ variables:
 
 before_script:
   # Instalacja potrzebnych narzędzi
+  - apt-get update -y
+  - apt-get install -y libpq-dev
   - python --version
   - pip install --upgrade pip
-  - pip install -r requirements.txt
-
-install_dependencies:
-  stage: install
-  script:
-    # Instalowanie zależności z requirements.txt
-    - pip install -r requirements.txt
+  # Przejście do folderu scrum-board-visi, gdzie znajduje się requirements.txt
+  - cd scrum-board-visi
+  - pip install -r scrum-board-visi/requirements.txt
 
 test:
   stage: test
@@ -27,10 +25,10 @@ test:
       # Ustawienie SQLite na czas testów w pliku settings.py
       sed -i 's|\'ENGINE\':\'django.db.backends.postgresql\'|\'ENGINE\': \'django.db.backends.sqlite3\'|g' scrum-board-visi/settings.py
       # Uruchomienie migracji
-      python manage.py makemigrations
-      python manage.py migrate
+      python scrum-board-visi/manage.py makemigrations
+      python scrum-board-visi/manage.py migrate
       # Uruchomienie testów
-      python manage.py test
+      python scrum-board-visi/manage.py test
   artifacts:
     paths:
       - test-reports/
