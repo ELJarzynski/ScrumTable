@@ -1,25 +1,37 @@
-image: python:3.12
+image: docker:20.10.16  # Używamy obrazu Docker, by wykonywać polecenia Docker w CI/CD
+
 stages:
-  - install
+  - build
   - test
   - deploy
 
 variables:
-  PYTHON_VERSION: "3.12"
+  DOCKER_DRIVER: overlay2
 
 before_script:
-  - apt-get update -y
-  - python3 -m venv venv
-  - source venv/bin/activate
-  - pip install -v -r scrum-board-visi/requirements.txt
+  - apk add --no-cache --update python3 py3-pip docker  # Instalacja wymaganych pakietów
+  - docker info  # Sprawdzamy, czy Docker działa
+  - docker-compose --version  # Sprawdzamy wersję docker-compose
 
+# Etap build - Budowanie obrazów Docker
+build:
+  stage: build
+  script:
+    - echo "Building Docker images"
+    - docker-compose -f docker-compose.yml build  # Budowanie backendu i frontendu z pliku docker-compose.yml
+
+# Etap test - Uruchomienie testów
 test:
   stage: test
   script:
     - echo "Running tests"
-    - python scrum-board-visi/manage.py test
+    - docker-compose -f docker-compose.yml run web python manage.py test  # Uruchomienie testów w kontenerze web (backend)
 
+# Etap deploy - Wdrażanie na środowisko produkcyjne
 deploy:
   stage: deploy
   script:
     - echo "Deploying to production..."
+    # Możesz dodać tu kod wdrożeniowy, np. deployment na serwer produkcyjny
+  only:
+    - master
