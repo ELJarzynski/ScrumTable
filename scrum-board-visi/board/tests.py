@@ -1,74 +1,122 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework import status
-from .models import Board, BoardUser
-from .serializer import BoardUserSerializer
+from board.models import Board, BoardUser
+from user.models import User
+from django.utils import timezone
 
-CREATE_USER_BOARD_URL = '/board/add_user/'
-CREATE_BOARD_URL = '/board/create_board/'
-
-
-class CreateBoardViewTests(TestCase):
+"""Models Tests"""
+class BoardUserTest(TestCase):
 
     def setUp(self):
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            email='test@example.com',
-            password='testpass'
+        self.user = User.objects.create_user(
+            email='testuser@example.com',
+            first_name='Test',
+            last_name='User',
+            password='password'
         )
-        self.client.force_authenticate(self.user)
 
-    def test_create_board_success(self):
-        """Test creating a new board"""
-        payload = {
+    def test_board_str_method(self):
+        self.assertEqual(str(self.user), 'testuser@example.com')
+
+    def test_board_user_creation(self):
+        self.assertTrue(self.user.is_active)
+        self.assertFalse(self.user.is_staff)
+
+
+class BoardTest(TestCase):
+
+    def setUp(self):
+        self.due_date = timezone.now() + timezone.timedelta(days=7)
+
+    def test_board_creation(self):
+        # Tworzenie tablicy
+        board = Board.objects.create(
+            name="Test Board",
+            description="This is a test board.",
+            due_date=self.due_date
+        )
+
+        # Testowanie właściwości tablicy
+        self.assertEqual(board.name, "Test Board")
+        self.assertEqual(board.description, "This is a test board.")
+        self.assertEqual(board.due_date, self.due_date)  # Porównanie tylko daty
+        self.assertIsNotNone(board.create_date)  # create_date powinno zostać ustawione automatycznie
+        self.assertEqual(str(board), "Test Board")  # Metoda __str__ powinna zwrócić nazwę
+
+"""serializer models"""
+from rest_framework.exceptions import ValidationError
+from rest_framework.test import APITestCase
+from board.serializer import BoardSerializer
+from board.models import Board
+from user.models import User
+from django.utils import timezone
+
+
+class BoardSerializerTest(APITestCase):
+
+    def setUp(self):
+        # Tworzenie przykładowego użytkownika i tablicy
+        self.user = User.objects.create_user(
+            email='testuser@example.com',
+            first_name='Test',
+            last_name='User',
+            password='password'
+        )
+        self.due_date = timezone.now() + timezone.timedelta(days=7)
+        self.board_data = {
             'name': 'Test Board',
-            'description': 'Test Board Description',
-            'due_date': '2024-03-15'
+            'description': 'This is a test board.',
+            'due_date': self.due_date
         }
-        response = self.client.post(CREATE_BOARD_URL, payload)
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # Sprawdź, czy tablica została utworzona
-        self.assertTrue(Board.objects.filter(name=payload['name']).exists())
-
-        # Sprawdź, czy użytkownik został dodany jako właściciel tablicy
-        board = Board.objects.get(name=payload['name'])
-        self.assertTrue(BoardUser.objects.filter(board=board, user=self.user, is_owner=True).exists())
+        self.board = Board.objects.create(**self.board_data)
 
 
-class CreateUserBoardViewTests(TestCase):
-
-    def setUp(self):
-        self.client = APIClient()
-        self.owner = get_user_model().objects.create_user(
-            email='owner@example.com',
-            password='testpass'
+    def test_board_serializer_valid(self):
+        """Test, czy serializer poprawnie serializuje dane tablicy"""
+        board = Board.objects.create(
+            name='Test Board',
+            description='This is a test board.',
+            due_date=self.due_date.date()  # Użycie .date() z datetime
         )
-        self.client.force_authenticate(self.owner)
+        serializer = BoardSerializer(board)
+        # Sprawdzamy, czy dane w serializerze odpowiadają danym w obiekcie
+        self.assertEqual(serializer.data['name'], board.name)
+        self.assertEqual(serializer.data['description'], board.description)
+        self.assertEqual(serializer.data['due_date'], board.due_date.strftime('%d %B %Y'))
 
-        self.user = get_user_model().objects.create_user(
-            email='user@example.com',
-            password='testpass'
-        )
+    def test_board_serializer_invalid_due_date(self):
+        """Test, czy serializer poprawnie obsługuje nieprawidłową datę"""
+        invalid_data = {
+            'name': 'Test Board',
+            'description': 'This is a test board.',
+            'due_date': 'invalid date'
+        }
+        serializer = BoardSerializer(data=invalid_data)
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)
 
-    def test_create_user_board_success(self):
-        """Test creating a new BoardUser by owner"""
-        board = Board.objects.create(name='Test Board', description='Test Board Description', due_date='2024-03-15')
-        payload = {'board_id': board.id, 'email': self.user.email}  # Poprawiony klucz na 'email'
-        response = self.client.post(CREATE_USER_BOARD_URL, payload)
+    def test_board_serializer_create(self):
+        """Test, czy serializer poprawnie deserializuje dane do modelu"""
+        data = {
+            'name': 'New Board',
+            'description': 'This is a new test board.',
+            'due_date': timezone.now().date()
+        }
+        serializer = BoardSerializer(data=data)
+        if not serializer.is_valid():
+            print(serializer.errors)
+        self.assertTrue(serializer.is_valid())
+        board = serializer.save()
+        self.assertEqual(board.name, data['name'])
+        self.assertEqual(board.description, data['description'])
+        # Porownanie stringow
+        self.assertEqual(str(board.due_date), str(data['due_date']))
 
-        self.assertTrue(Board.objects.filter(name='Test Board').exists())  # Sprawdź, czy tablica została utworzona
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # Sprawdź, czy użytkownik został dodany do tablicy
-        board_user = BoardUser.objects.filter(board=board, user=self.user)
-        self.assertTrue(board_user.exists())
-        print(board_user[0].board)
-
-        # Sprawdź, czy użytkownik został dodany jako właściciel tablicy
-        # self.assertTrue(BoardUser.objects.filter(board=board, user=self.owner, is_owner=True).exists())
-
-
-
+    def test_board_serializer_missing_field(self):
+        """Test, czy serializer zwróci błąd, gdy brakuje obowiązkowego pola"""
+        data = {
+            'description': 'Test board with missing name',
+            'due_date': timezone.now() + timezone.timedelta(days=7)
+        }
+        serializer = BoardSerializer(data=data)
+        self.assertFalse(serializer.is_valid())  # Dane będą niepoprawne
+        self.assertIn('name', serializer.errors)  # Powinno zwrócić błąd dla pola

@@ -1,0 +1,25 @@
+image: python:3.12
+stages:
+  - install
+  - test
+  - deploy
+
+variables:
+  PYTHON_VERSION: "3.12"
+
+before_script:
+  - apt-get update -y
+  - python3 -m venv venv
+  - source venv/bin/activate
+  - pip install -v -r scrum-board-visi/requirements.txt
+
+test:
+  stage: test
+  script:
+    - echo "Running tests"
+    - python scrum-board-visi/manage.py test
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploying to production..."
