@@ -21,7 +21,7 @@ build:
   stage: build
   script:
     - echo "Building Docker images"
-    - docker-compose -f docker-compose.yml build  # Budowanie backendu i frontendu z pliku docker-compose.yml
+    - docker-compose -f scrum-board-visi/docker-compose.yml build  # Budowanie backendu i frontendu z pliku docker-compose.yml
 
 # Etap test - Uruchomienie testów
 test:
