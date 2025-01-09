@@ -21,7 +21,9 @@ before_script:
 test:
   stage: test
   script:
-    - python scrum-board-visi/manage.py test  # Uruchomienie wszystkich testów
+    - echo "Running tests"
+    - find . -name "test_*.py"  # Sprawdzi, czy pliki testowe są obecne
+    - python scrum-board-visi/manage.py test  # Uruchomienie testów
 
 deploy:
   stage: deploy
