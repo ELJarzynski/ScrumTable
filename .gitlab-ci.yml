@@ -22,9 +22,6 @@ test:
   stage: test
   script:
     - python scrum-board-visi/manage.py test  # Uruchomienie wszystkich testów
-  artifacts:
-    paths:
-      - test-reports/
 
 deploy:
   stage: deploy
