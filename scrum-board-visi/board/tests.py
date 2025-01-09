@@ -7,7 +7,6 @@ from django.utils import timezone
 class BoardUserTest(TestCase):
 
     def setUp(self):
-        # Provide email, first_name, and last_name when creating the user
         self.user = User.objects.create_user(
             email='testuser@example.com',
             first_name='Test',
@@ -16,15 +15,12 @@ class BoardUserTest(TestCase):
         )
 
     def test_board_str_method(self):
-        # Your test logic here
         self.assertEqual(str(self.user), 'testuser@example.com')
 
     def test_board_user_creation(self):
-        # Your test logic here
         self.assertTrue(self.user.is_active)
         self.assertFalse(self.user.is_staff)
 
-from django.utils import timezone
 
 class BoardTest(TestCase):
 
@@ -65,7 +61,7 @@ class BoardSerializerTest(APITestCase):
             last_name='User',
             password='password'
         )
-        self.due_date = timezone.now() + timezone.timedelta(days=7)  # Add this line
+        self.due_date = timezone.now() + timezone.timedelta(days=7)
         self.board_data = {
             'name': 'Test Board',
             'description': 'This is a test board.',
@@ -92,7 +88,7 @@ class BoardSerializerTest(APITestCase):
         invalid_data = {
             'name': 'Test Board',
             'description': 'This is a test board.',
-            'due_date': 'invalid date'  # niepoprawny format daty
+            'due_date': 'invalid date'
         }
         serializer = BoardSerializer(data=invalid_data)
         with self.assertRaises(ValidationError):
@@ -103,16 +99,16 @@ class BoardSerializerTest(APITestCase):
         data = {
             'name': 'New Board',
             'description': 'This is a new test board.',
-            'due_date': timezone.now().date()  # Use .date() to get a date object
+            'due_date': timezone.now().date()
         }
         serializer = BoardSerializer(data=data)
         if not serializer.is_valid():
-            print(serializer.errors)  # Add this line to debug the errors
+            print(serializer.errors)
         self.assertTrue(serializer.is_valid())
-        board = serializer.save()  # Zapisywanie do bazy danych
+        board = serializer.save()
         self.assertEqual(board.name, data['name'])
         self.assertEqual(board.description, data['description'])
-        # Compare as strings
+        # Porownanie stringow
         self.assertEqual(str(board.due_date), str(data['due_date']))
 
     def test_board_serializer_missing_field(self):
@@ -122,5 +118,5 @@ class BoardSerializerTest(APITestCase):
             'due_date': timezone.now() + timezone.timedelta(days=7)
         }
         serializer = BoardSerializer(data=data)
-        self.assertFalse(serializer.is_valid())  # Oczekujemy, że dane będą niepoprawne
-        self.assertIn('name', serializer.errors)  # Powinno zwrócić błąd dla pola 'name'
+        self.assertFalse(serializer.is_valid())  # Dane będą niepoprawne
+        self.assertIn('name', serializer.errors)  # Powinno zwrócić błąd dla pola
