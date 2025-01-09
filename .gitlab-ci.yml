@@ -15,7 +15,6 @@ before_script:
   - python --version
   - pip install --upgrade pip
   # Przejście do folderu scrum-board-visi, gdzie znajduje się requirements.txt
-  - cd scrum-board-visi
   - pip install -r scrum-board-visi/requirements.txt
 
 test:
