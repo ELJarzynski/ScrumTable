@@ -9,13 +9,17 @@ variables:
   PYTHON_VERSION: "3.12"
 
 before_script:
+  - apt-get update -y
+  - apt-get install -y libpq-dev build-essential python3-dev
+  - python3 -m venv venv
+  - source venv/bin/activate
   # Instalacja potrzebnych narzędzi
   - apt-get update -y
   - apt-get install -y libpq-dev
   - python --version
   - pip install --upgrade pip
   # Przejście do folderu scrum-board-visi, gdzie znajduje się requirements.txt
-  - pip install -r scrum-board-visi/requirements.txt
+  - pip install -v -r scrum-board-visi/requirements.txt
 
 test:
   stage: test
