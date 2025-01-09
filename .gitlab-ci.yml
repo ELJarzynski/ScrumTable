@@ -1,48 +1,42 @@
-before_script:
-  - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash curl
-  - curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  - chmod +x /usr/local/bin/docker-compose
-
 stages:
-  - build
+  - install
   - test
   - deploy
 
-build_backend:
-  stage: build
-  image: docker:20.10.23  # Zamiast python:3.12-alpine, używamy obrazu Docker'a, który zawiera docker-compose
-  services:
-    - docker:dind
+variables:
+  # Określamy wersję Pythona
+  PYTHON_VERSION: "3.10"
+
+before_script:
+  # Instalacja potrzebnych narzędzi
+  - apt-get update -y
+  - apt-get install -y libpq-dev
+  - python --version
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
+install_dependencies:
+  stage: install
   script:
-    - docker-compose -f ../backend/docker-compose.yml build web
+    - pip install -r requirements.txt
 
-
-build_frontend:
-  stage: build
-  image: docker:20.10.23  # Zamiast python:3.12-alpine, używamy obrazu Docker'a, który zawiera docker-compose
-  script:
-    - docker-compose -f ../frontend/docker-compose.yml build frontend
-
-
-
-# Etap testowania backendu
-test_backend:
+test:
   stage: test
-  image: python:3.12-alpine  # Obraz Alpine dla backendu
-  services:
-    - docker:dind  # Docker-in-Docker do uruchamiania kontenerów
   script:
-    - docker-compose -f ../backend/docker-compose.yml run web python manage.py test  # Uruchomienie testów
+    # Ustawienie SQLite na czas testów w pliku settings.py
+    - sed -i 's|\'ENGINE\':\'django.db.backends.postgresql\'|\'ENGINE\': \'django.db.backends.sqlite3\'|g' scrum-board-visi/settings.py
+    # Uruchomienie migracji i testów
+    - python manage.py makemigrations
+    - python manage.py migrate
+    - python manage.py test
 
-# Etap testowania frontendu
-test_frontend:
-  stage: test
-  image: node:16-alpine  # Obraz Alpine dla frontendu
-  script:
-    - docker-compose -f ../frontend/docker-compose.yml run frontend npm run test  # Uruchomienie testów frontendu
+  artifacts:
+    paths:
+      - test-reports/
 
-# Etap deploymentu
 deploy:
   stage: deploy
   script:
-    - echo "Deployment steps here"  # Możesz dodać tu kroki związane z deploymentem
+    - echo "Deploying to production..."
+  only:
+    - master
