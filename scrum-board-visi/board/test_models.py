@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..models import Board, BoardUser
+from board.models import Board, BoardUser
 from user.models import User
 from django.utils import timezone
 
