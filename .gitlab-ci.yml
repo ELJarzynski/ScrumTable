@@ -1,29 +1,29 @@
-# Wspólne kroki przed każdym zadaniem
 before_script:
   - apk update && apk add --no-cache gcc libffi-dev postgresql-dev musl-dev bash curl
-  - curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  - chmod +x /usr/local/bin/docker-compose  # Ustawienie praw do uruchamiania
+  - curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
 
 stages:
   - build
   - test
   - deploy
 
-# Etap budowania backendu
 build_backend:
   stage: build
-  image: python:3.12-alpine  # Obraz Alpine dla backendu
+  image: docker:20.10.23  # Zamiast python:3.12-alpine, używamy obrazu Docker'a, który zawiera docker-compose
   services:
-    - docker:dind  # Aby umożliwić Docker-in-Docker
+    - docker:dind
   script:
-    - docker-compose -f ../backend/docker-compose.yml build web  # Budowanie backendu
+    - docker-compose -f ../backend/docker-compose.yml build web
 
-# Etap budowania frontendu
+
 build_frontend:
   stage: build
-  image: node:16-alpine  # Obraz Alpine dla frontendu
+  image: docker:20.10.23  # Zamiast python:3.12-alpine, używamy obrazu Docker'a, który zawiera docker-compose
   script:
-    - docker-compose -f ../frontend/docker-compose.yml build frontend  # Budowanie frontendu
+    - docker-compose -f ../frontend/docker-compose.yml build frontend
+
+
 
 # Etap testowania backendu
 test_backend:
